@@ -33,6 +33,7 @@ SHOTS = {
     "rear_seat":     ((0.05, 0.75, 1.2), (0.0, -0.6, 0.6), 20, {"cabin": True}),
     "door_card":     ((-0.15, 0.45, 1.0), (-0.9, 0.55, 0.78), 24, {"cabin": True, "door_fl": 0}),
     "door_sill":     ((-1.45, 0.25, 1.12), (-0.79, 0.52, 0.36), 32, {"door_fl": -65}),
+    "openings":      ((-4.0, 4.6, 2.6), (0.0, 0.3, 0.6), 35, {"open_all": True}),
     "badge_front":   ((0.25, 3.2, 0.75), (0.0, 2.34, 0.52), 50, {}),
     "badge_rear":    ((0.3, -3.3, 1.05), (0.0, -2.26, 0.9), 50, {}),
 }
@@ -91,12 +92,18 @@ def show_lod(lod):
 def main(names):
     bpy.ops.wm.open_mainfile(filepath=os.path.join(ROOT, "EV_Sedan.blend"))
     cam, light = setup()
-    door = [o for o in bpy.data.objects if o.name.startswith("Door_FL_LOD")]
+    obj = bpy.data.objects
     for name in names:
         loc, target, lens, opt = SHOTS[name]
         show_lod(opt.get("lod", 0))
-        for d in door:
-            d.rotation_euler.z = math.radians(opt.get("door_fl", 0))
+        # hinge pivots (Blender axes): doors about Z, hood / trunk about X
+        every = opt.get("open_all", False)
+        obj["Door_FL_Pivot"].rotation_euler.z = math.radians(-65 if every else opt.get("door_fl", 0))
+        obj["Door_RL_Pivot"].rotation_euler.z = math.radians(-65 if every else 0)
+        obj["Door_FR_Pivot"].rotation_euler.z = math.radians(65 if every else 0)
+        obj["Door_RR_Pivot"].rotation_euler.z = math.radians(65 if every else 0)
+        obj["Hood_Pivot"].rotation_euler.x = math.radians(45 if every else 0)
+        obj["Trunk_Pivot"].rotation_euler.x = math.radians(-60 if every else 0)
         cabin = opt.get("cabin", False)
         light.data.energy = opt.get("fill", 25) if cabin else 0.0
         light.location = (-0.1, 0.1, 1.15) if name != "steering_wheel" else SW + SW_N * 0.6 + Vector((0.2, 0, 0.25))

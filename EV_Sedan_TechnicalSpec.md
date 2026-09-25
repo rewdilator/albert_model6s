@@ -9,7 +9,7 @@ Generated 2026-09-22 by `build_game_asset.py` (Blender 4.5 headless); Albert bra
 | Origin | Root `EV_Sedan` at ground level, centred between the wheels (x=0, y=0 on the ground plane) |
 | Axes | Blender: +Y nose, +Z up, +X right (passenger side, LHD). FBX exported `-Z forward / Y up`, so in **Unity: nose = +Z, up = +Y, right = +X** |
 | Triangles | LOD0 463,077 / LOD1 162,585 / LOD2 53,959 (source 684,315) |
-| Draw calls (LOD0) | 124 sub-meshes across 22 renderers, 34 materials (branding reuses existing materials) |
+| Draw calls (LOD0) | 125 sub-meshes across 22 renderers, 34 materials (branding reuses existing materials) |
 | Textures | 44 PNG files (1K max); Unity packed maps in `textures/unity_packed/` |
 | Texture licence | Photo-scanned sets (leather, carpet, felt, plastic, rubber, brushed metal) are **CC0** from ambientCG.com - no attribution required |
 
@@ -39,7 +39,7 @@ Generated 2026-09-22 by `build_game_asset.py` (Blender 4.5 headless); Albert bra
 | `Bumper_F` | 25,474 | 8,967 | 3,101 | 7 | `Bumper_F_Pivot` | (0.779, 0.785, 1.723) |
 | `Bumper_R` | 19,687 | 6,890 | 2,361 | 4 | `Bumper_R_Pivot` | (0.779, 0.921, -1.72) |
 | `Glass` | 6,460 | 2,260 | 774 | 2 | `Chassis` | (0.0, -0.0, 0.0) |
-| `Interior` | 131,063 | 46,292 | 14,766 | 13 | `Chassis` | (0.0, -0.0, 0.0) |
+| `Interior` | 131,063 | 46,292 | 14,766 | 14 | `Chassis` | (0.0, -0.0, 0.0) |
 | `Body` | 72,149 | 25,252 | 8,657 | 11 | `Chassis` | (0.0, -0.0, 0.0) |
 | `SteeringWheel` | 11,787 | 3,550 | 814 | 4 | `Steering_Pivot` | (-0.419, 0.827, 0.542) |
 | `Wiper_R` | 3,138 | 1,097 | 375 | 1 | `Wiper_R_Pivot` | (-0.074, 0.829, 1.431) |
@@ -102,8 +102,10 @@ Pivot empties are pure translations (no rotation/scale). Child meshes have their
 | `Wiper_L_Pivot` | (-0.629, 0.859, 1.266) | (-0.629, 1.266, 0.859) |
 | `Wiper_R_Pivot` | (-0.074, 0.829, 1.431) | (-0.074, 1.431, 0.829) |
 
+All four doors, the hood (frunk, with its own tub) and the trunk are separate meshes on their own pivots, so each opens independently; `Unity/AlbertEV/Runtime/AlbertCarOpenings.cs` animates them (section 11).
+
 Hinge axes (Unity local space):
-- `Door_FL/FR/RL/RR` - rotate about **Y** (vertical). Open ±65° (left doors negative, right doors positive).
+- `Door_FL/FR/RL/RR` - rotate about **Y** (vertical). Open 65°: **left doors +65°, right doors −65°** (earlier revisions of this file had the signs swapped). Hinges are at the front edge of each door.
 - `Hood` - rotate about **X** (`Hood_Pivot` is at the cowl edge); open -45°.
 - `Trunk` - rotate about **X** (`Trunk_Pivot` at the rear-glass edge); open +60°.
 - `SteeringWheel` - rotate about the wheel-plane normal (tilted ~25° from Z); ±450° lock-to-lock. RCC's "Steering Wheel" slot accepts it directly.
@@ -125,16 +127,18 @@ Hinge axes (Unity local space):
 | Brake torque | 3,000 Nm | |
 | Steer angle | 38° | |
 | Drag | 0.23 Cd, frontal area 2.2 m² | Rigidbody drag ≈ 0.02 |
-| Body collider | `MeshCollider` (convex) on `Body_LOD2` mesh + a `BoxCollider` per door | keep glass/interior out of collision |
+| Body collider | `MeshCollider` (convex) on `Body_LOD2` mesh + a `BoxCollider` per door, hood, trunk and bumper | keep glass/interior out of collision; *Tools > Albert EV > Add Colliders* sets this up |
 
 RCC lights: add `RCC_Light` objects at `Loc_Headlight_R` (mirror x for left), `Loc_Taillight_R` (mirror), `Loc_Brakelight_*`, `Loc_Indicator_*`, `Loc_Reverse_*`, `Loc_Foglight_*`.
 Drive the lamp *meshes* by animating the emission of `Light_Head`, `Light_Tail`, `Light_Indicator`, `Light_Reverse`, `Light_Fog`, `Light_Interior` (all use `ev_sedan_lights_d` as emission colour; emission 0 = off).
 
 ## 6. Unity import settings (FBX)
-- Model: Scale Factor 1, Convert Units on, Bake Axis Conversion **on**, Read/Write off, Mesh Compression off/Low, Generate Lightmap UVs off.
+Everything in this section is applied automatically by `Unity/AlbertEV/Editor/AlbertEVImport.cs` (section 11).
+
+- Model: Scale Factor 1, Convert Units on, Bake Axis Conversion **on**, Read/Write off (turn it on only if you use RCC mesh damage), Mesh Compression off, Optimize Mesh on, Generate Lightmap UVs off, no animation / cameras / lights / blend shapes.
 - Normals: Import; Tangents: Calculate Mikktspace; Smoothness Source: From Smoothing Groups.
 - Materials: extract; shader **Universal Render Pipeline/Lit**, Metallic workflow (see section 7).
-- `EV_Sedan_LODs.fbx` imports with an automatic `LODGroup` (`Name_LOD0/1/2` siblings). Suggested transitions: LOD0 ≥ 60 %, LOD1 ≥ 25 %, LOD2 ≥ 6 %, cull < 2 %.
+- `EV_Sedan_LODs.fbx` imports with an automatic `LODGroup` per part (`Name_LOD0/1/2` siblings). Transitions: LOD0 ≥ 45 %, LOD1 ≥ 15 %, LOD2 ≥ 1.5 %, culled below. Glass and the far-LOD interior / steering wheel / brakes do not cast shadows.
 - Normal maps: Texture Type = Normal map, sRGB off. Files are OpenGL (+Y) - same as Unity - **do not** flip green.
 - `unity_packed/*_ms.png`: sRGB **off**; URP/Lit *Metallic Map* (R = metallic, A = smoothness).
 - `_r` roughness maps are for Blender / Unreal / glTF; in URP use the packed `_ms` instead.
@@ -143,11 +147,11 @@ Drive the lamp *meshes* by animating the emission of `Light_Head`, `Light_Tail`,
 | Material | Render mode | Base colour (linear) | Metallic | Roughness | Clear coat | Alpha | Emission | Textures | Used for |
 |---|---|---|---|---|---|---|---|---|---|
 | `Paint_Body` | Opaque | (0.86, 0.87, 0.85) | 0.18 | 0.3 | 1.0 | 1.0 | 0.0 | - | Pearl-white car paint; recolour via Base Color |
-| `Trim_Black_Gloss` | Opaque | (0.008, 0.008, 0.009) | 0.0 | 0.12 | 0.6 | 1.0 | 0.0 | - | Piano-black pillars, lower trims, wheel caps, steering-wheel emblem plaque + thumbwheel pods |
+| `Trim_Black_Gloss` | Opaque | (0.008, 0.008, 0.009) | 0.0 | 0.12 | 0.6 | 1.0 | 0.0 | - | Piano-black pillars, lower trims, wheel caps, door handles, fender side-repeater housings, steering-wheel emblem plaque + thumbwheel pods |
 | `Plastic_Black_Satin` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.45 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_plastic_black_d.png`, Normal: `ev_sedan_plastic_black_n.png`, Roughness: `ev_sedan_plastic_black_r.png` | Satin exterior plastics, lamp housings |
 | `Plastic_Black_Matte` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.7 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_plastic_black_d.png`, Normal: `ev_sedan_plastic_black_n.png`, Roughness: `ev_sedan_plastic_black_r.png` | Grained interior plastics, dash, door cards, underbody, `ALBERT` sill-plate inlay |
 | `Fabric_Dark` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.95 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_fabric_dark_d.png`, Normal: `ev_sedan_fabric_dark_n.png`, Roughness: `ev_sedan_fabric_dark_r.png` | Headliner / trunk felt |
-| `Chrome` | Opaque | (0.92, 0.92, 0.93) | 1.0 | 0.06 | 0.0 | 1.0 | 0.0 | - | Window belt-line trim, handles, all `A+` emblems, `ALBERT` trunk wordmark, steering-wheel thumbwheels |
+| `Chrome` | Opaque | (0.92, 0.92, 0.93) | 1.0 | 0.06 | 0.0 | 1.0 | 0.0 | - | Window belt-line trim, all `A+` emblems, `ALBERT` trunk wordmark, steering-wheel thumbwheels |
 | `Aluminium_Brushed` | Opaque | (0.8, 0.8, 0.8) | 1.0 | 0.38 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_aluminium_d.png`, Normal: `ev_sedan_aluminium_n.png`, Roughness: `ev_sedan_aluminium_r.png` | Brushed dash / door trim strips, door-sill plates |
 | `Metal_Dark` | Opaque | (0.22, 0.22, 0.23) | 0.85 | 0.6 | 0.0 | 1.0 | 0.0 | - | Suspension, dust shields |
 | `Light_Housing` | Opaque | (0.85, 0.85, 0.87) | 1.0 | 0.22 | 0.0 | 1.0 | 0.0 | - | Reflector bowls inside lamps |
@@ -236,7 +240,7 @@ UV notes: white/black leather, carpet, belt and aluminium tile with the original
 - Body silhouette is still the source car's shape; only branding, textures, materials, scale and topology were changed.
 - Interior is a single renderer (`Interior`); split it if you need a separate first-person cull.
 - Doors contain their own glass/inner panel; no separate per-door window renderer.
-- No blend shapes. RCC mesh damage works on the `Body_LOD0` MeshFilter; add door/bumper MeshFilters to the damage list if wanted.
+- No blend shapes. RCC mesh damage works on the `Body_LOD0` MeshFilter; add door/bumper MeshFilters to the damage list if wanted (needs Read/Write enabled on the FBX).
 - FBX does not carry clear-coat or roughness maps into Unity's importer - use the tables above.
 
 ## 10. Albert branding
@@ -252,7 +256,22 @@ All badges are real geometry built from the vector outlines in `tools/albert_bra
 | Door-sill plates | `Interior` | 380 × 34 mm, `ALBERT` 15 mm cap height | Brushed-aluminium plate with black inlay on both front sills, readable from outside; LOD0/1 only | `Aluminium_Brushed`, `Plastic_Black_Matte` |
 | Touchscreen | `Interior` (`Screen`) | - | `A+`/`ALBERT` vehicle card in `ev_sedan_screen_d.png` | `Screen` |
 
+- Door handles (all four doors) and the fender side-repeater housings are gloss black (`Trim_Black_Gloss`) like the production car, instead of chrome (`tools/apply_black_trim.py`).
 - The touchscreen UVs were flipped vertically: the source mapped the UI upside down. It now shows the right way up in Blender and Unity.
 - Logo files for menus, loading screens and decals are in `brand/` (SVG + transparent PNG, white and black).
 - Branding is applied by `tools/apply_albert_branding.py` on the unbranded `.blend`; the FBX files are exported by `tools/export_fbx.py` with the same settings as the original build (FBX 7.4, `-Z` forward / `Y` up, edge smoothing, tangents, relative texture paths).
+
+## 11. Unity quick start (Unity 6 / URP)
+1. Copy `EV_Sedan_LODs.fbx` (or `EV_Sedan.fbx`), the `textures/` folder and `Unity/AlbertEV/` into one folder under `Assets/`, e.g. `Assets/AlbertEV/`. The import settings from section 6 are applied automatically by `AlbertEVImport.cs`.
+2. **Tools > Albert EV > Create URP Materials** builds the 34 URP/Lit materials from section 7 (textures, packed metallic/smoothness, transparency, alpha-clipped lamps with emission ready to animate) in a `Materials/` folder and remaps them onto both FBX files.
+3. Drag the model into the scene, select it and run **Tools > Albert EV > Add Colliders To Selected Car** and **Add Openings Component To Selected Car**. Add your Rigidbody / RCC controller to the root as in section 5.
+4. Open things from code or from the component's ⋮ menu in the Inspector:
+   ```csharp
+   var car = GetComponent<AlbertEV.AlbertCarOpenings>();
+   car.Toggle(AlbertEV.CarOpening.DoorFrontLeft);   // DoorFrontRight, DoorRearLeft, DoorRearRight, Hood, Trunk
+   car.SetOpen(AlbertEV.CarOpening.Trunk, true, instant: true);
+   ```
+   The component rotates the `*_Pivot` objects, so all LODs, door glass, handles and badges move together. Hinge axes are derived from the model, so it works with any import orientation.
+
+Performance notes: LOD0 is a hero-quality 463k triangles; with the LOD transitions above a car at normal gameplay distance renders LOD1 (163k) or LOD2 (54k). All materials use the same URP/Lit shader and have GPU instancing on, so the SRP Batcher keeps the ~125 sub-meshes cheap. Textures are 1K with streaming mip maps.
 

@@ -50,8 +50,11 @@ def superellipse(a, b, n=2.6, steps=72):
     return pts
 
 
-def glyphs_mesh(name, glyphs, scale, depth, bevel, lod, offset=(0.0, 0.0)):
-    """Extrude 2D rings into a mesh. Returns a mesh whose z runs from 0 (back) to depth (face)."""
+def glyphs_mesh(name, glyphs, scale, depth, bevel, lod, offset=(0.0, 0.0), grow=0.0):
+    """Extrude 2D rings into a mesh. Returns a mesh whose z runs from 0 (back) to depth (face).
+
+    grow (metres) fattens every stroke outwards, e.g. for a chrome rim around a black badge.
+    """
     det = LOD_DETAIL[lod]
     cu = bpy.data.curves.new(name, "CURVE")
     cu.dimensions = "2D"
@@ -61,7 +64,7 @@ def glyphs_mesh(name, glyphs, scale, depth, bevel, lod, offset=(0.0, 0.0)):
     cu.extrude = max(depth / 2 - b, 1e-5)
     cu.bevel_depth = b
     cu.bevel_resolution = det["bevel_res"]
-    cu.offset = -b                                 # keep the outline at its true size
+    cu.offset = grow - b                           # keep the outline at its true size (+ grow)
     ox, oy = offset
     for g in glyphs:
         for ring in g:
@@ -266,24 +269,28 @@ def surface_badge(ob, lod, world_centre, view_dir, right_world, parts_fn):
     attach(ob, parts_fn(lod), frame, bvh)
 
 
-def ext_emblem(cap, depth=4.5 * MM, bevel=0.9 * MM):
+def black_chrome(name, glyphs, cap, lod, y, depth, rim):
+    """Gloss-black letters sitting on a slightly larger chrome base: reads clearly on white paint."""
+    off = (0.0, y / cap - 0.5)
+    return [(glyphs_mesh(name + "_Rim", glyphs, cap, depth * 0.7, 0.45 * MM, lod, offset=off, grow=rim),
+             "Chrome", 0.8 * MM),
+            (glyphs_mesh(name + "_Face", glyphs, cap, depth, 0.5 * MM, lod, offset=off),
+             "Trim_Black_Gloss", 0.8 * MM)]
+
+
+def ext_emblem(cap, y=0.0, depth=5.0 * MM, rim=1.4 * MM):
     def fn(lod):
         glyphs, _ = ab.emblem()
-        return [(glyphs_mesh("Ext_Aplus", glyphs, cap, depth, bevel, lod, offset=(0.0, -0.5)),
-                 "Chrome", 0.8 * MM)]
+        return black_chrome("Front_Aplus", glyphs, cap, lod, y, depth, rim)
     return fn
 
 
-def rear_badges(cap_emblem, cap_word, y_emblem, y_word):
+def rear_badges(cap_emblem, cap_word, y_emblem, y_word, tracking):
     def fn(lod):
         glyphs, _ = ab.emblem()
-        word, _ = ab.wordmark()
-        parts = [(glyphs_mesh("Rear_Aplus", glyphs, cap_emblem, 4.5 * MM, 0.9 * MM, lod,
-                              offset=(0.0, y_emblem / cap_emblem - 0.5)), "Chrome", 0.8 * MM)]
-        if lod < 2:                   # the small wordmark is not readable at LOD2 distances
-            parts.append((glyphs_mesh("Rear_Wordmark", word, cap_word, 3.0 * MM, 0.5 * MM, lod,
-                                      offset=(0.0, y_word / cap_word - 0.5)), "Chrome", 0.8 * MM))
-        return parts
+        word, _ = ab.wordmark(tracking=tracking)
+        return (black_chrome("Rear_Aplus", glyphs, cap_emblem, lod, y_emblem, 5.0 * MM, 1.3 * MM) +
+                black_chrome("Rear_Wordmark", word, cap_word, lod, y_word, 4.0 * MM, 1.0 * MM))
     return fn
 
 
@@ -315,6 +322,18 @@ def sill_plates(ob, lod):
         attach(ob, [(plate, "Aluminium_Brushed", 0.4 * MM), (inlay, "Plastic_Black_Matte", -0.8 * MM)], frame, bvh)
 
 
+def seat_logos(ob, lod):
+    """Dark embroidered A+ on the front-seat headrest areas (driver and passenger)."""
+    bvh = bvh_local(ob)
+    for x in (-0.42, 0.42):
+        hit, nrm = surface_normal(bvh, to_local(ob, (x, 0.3, 1.07)), to_local(ob, (0, -1, 0), is_dir=True))
+        nrm = nrm if nrm.y > 0 else -nrm            # face the front of the car
+        frame = Frame(hit, to_local(ob, (-1, 0, 0), is_dir=True), to_local(ob, (0, 0, 1), is_dir=True), nrm)
+        glyphs, _ = ab.emblem()
+        stitch = glyphs_mesh("Seat_Aplus", glyphs, 40 * MM, 1.0 * MM, 0.3 * MM, lod, offset=(0.0, -0.5))
+        attach(ob, [(stitch, "Leather_Black", 0.5 * MM)], frame, bvh)
+
+
 def fix_screen_uvs(ob):
     """The source mapped the touchscreen texture upside down (v grows downwards); flip it."""
     me = ob.data
@@ -336,14 +355,16 @@ def main():
     for lod in (0, 1, 2):
         steering_wheel_emblem(bpy.data.objects[f"SteeringWheel_LOD{lod}"], lod)
         # front fascia, centred just under the bonnet shut-line
-        surface_badge(bpy.data.objects[f"Bumper_F_LOD{lod}"], lod, (0.0, 2.345, 0.515), (0, -1, 0), (-1, 0, 0),
-                      ext_emblem(cap=46 * MM))
-        # trunk: emblem between the tail lamps, wordmark underneath
+        surface_badge(bpy.data.objects[f"Bumper_F_LOD{lod}"], lod, (0.0, 2.345, 0.50), (0, -1, 0), (-1, 0, 0),
+                      ext_emblem(cap=68 * MM))
+        # trunk: emblem between the tail lamps, wide-spaced wordmark underneath
         surface_badge(bpy.data.objects[f"Trunk_LOD{lod}"], lod, (0.0, -2.26, 0.905), (0, 1, 0), (1, 0, 0),
-                      rear_badges(cap_emblem=42 * MM, cap_word=17 * MM, y_emblem=0.036, y_word=-0.038))
+                      rear_badges(cap_emblem=50 * MM, cap_word=34 * MM, y_emblem=0.052, y_word=-0.032,
+                                  tracking=0.75))
         fix_screen_uvs(bpy.data.objects[f"Interior_LOD{lod}"])
         if lod < 2:                   # sill plates only matter up close
             sill_plates(bpy.data.objects[f"Interior_LOD{lod}"], lod)
+            seat_logos(bpy.data.objects[f"Interior_LOD{lod}"], lod)
         for w in ("FL", "FR", "RL", "RR"):
             wheel_cap_emblem(bpy.data.objects[f"Wheel_{w}_LOD{lod}"], lod)
 

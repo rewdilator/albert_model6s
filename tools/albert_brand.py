@@ -27,6 +27,17 @@ def _stadium_hole(x0, y0, y1, x_right, steps):
     return ring
 
 
+def _circle_intersection(c1, r1, c2, r2):
+    """Intersection of two circles with the larger x."""
+    dx, dy = c2[0] - c1[0], c2[1] - c1[1]
+    d = math.hypot(dx, dy)
+    a = (r1 * r1 - r2 * r2 + d * d) / (2 * d)
+    h = math.sqrt(max(0.0, r1 * r1 - a * a))
+    mx, my = c1[0] + a * dx / d, c1[1] + a * dy / d
+    p, q = (mx + h * dy / d, my - h * dx / d), (mx - h * dy / d, my + h * dx / d)
+    return p if p[0] >= q[0] else q
+
+
 def signed_area(ring):
     return 0.5 * sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(ring, ring[1:] + ring[:1]))
 
@@ -90,11 +101,13 @@ def glyph_B(w, steps=16):
     ru = (1 + w) / 2 - rl
     xu, xl = 0.30, 0.33                        # bowl arc centres (x)
     yl, yu = rl, 1 - ru                        # bowl arc centres (y)
-    waist = 2 * rl                             # top of the lower bowl
-    t0 = math.degrees(math.asin(max(-1.0, (waist - yu) / ru)))
+    # the two bowls meet where their outer circles intersect (right-hand point): a clean notch
+    ix, iy = _circle_intersection((xl, yl), rl, (xu, yu), ru)
+    a_low = math.degrees(math.atan2(iy - yl, ix - xl))
+    a_up = math.degrees(math.atan2(iy - yu, ix - xu))
     outline = [(0, 0), (xl, 0)]
-    outline += _arc(xl, yl, rl, -90, 90, steps)[1:]
-    outline += _arc(xu, yu, ru, t0, 90, steps)
+    outline += _arc(xl, yl, rl, -90, a_low, steps)[1:]
+    outline += _arc(xu, yu, ru, a_up, 90, steps)[1:]
     outline += [(0, 1)]
     # counters concentric with the bowls -> constant stroke all round
     upper = _stadium_hole(w, 1 - 2 * ru + w, 1 - w, xu + ru - w, steps)

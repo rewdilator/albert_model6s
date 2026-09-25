@@ -33,20 +33,22 @@ def local_frame(ob, origin_world, right, up, normal, ray_dir, reach=0.15):
 
 def phone_pads(ob, lod):
     parts = []
-    frame, bvh = local_frame(ob, Vector((0.0, 0.42, 0.60)), (1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, -1))
+    # tray between the cup holders (y < 0.39) and the screen (y > 0.52)
+    frame, bvh = local_frame(ob, Vector((0.0, 0.455, 0.60)), (1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, -1))
     glyphs, _ = ab.emblem()
     for x in (-0.049, 0.049):
-        pad = br.glyphs_mesh("PhonePad", [[rounded_rect(86 * MM, 165 * MM, 12 * MM, 5)]], 1.0,
+        pad = br.glyphs_mesh("PhonePad", [[rounded_rect(86 * MM, 125 * MM, 12 * MM, 5)]], 1.0,
                              2.0 * MM, 0.6 * MM, lod, offset=(x, 0.0))
         parts.append((pad, "Plastic_Black_Matte", 0.5 * MM))
-        logo = br.glyphs_mesh("PhonePad_Aplus", glyphs, 11 * MM, 2.3 * MM, 0.2 * MM, lod,
-                              offset=(x / (11 * MM), 0.062 / (11 * MM) - 0.5))
+        logo = br.glyphs_mesh("PhonePad_Aplus", glyphs, 14 * MM, 3.0 * MM, 0.3 * MM, lod,
+                              offset=(x / (14 * MM), 0.042 / (14 * MM) - 0.5))
         parts.append((logo, "Chrome", 0.5 * MM))
     br.attach(ob, parts, frame, bvh)
 
 
 def rear_console(ob, lod):
-    frame, bvh = local_frame(ob, Vector((0.0, -0.30, 0.465)), (1, 0, 0), (0, 0, 1), (0, -1, 0), (0, 1, 0), reach=0.25)
+    # start the ray just behind the console: the rear cushion's front edge sits at y = -0.37
+    frame, bvh = local_frame(ob, Vector((0.0, -0.20, 0.465)), (1, 0, 0), (0, 0, 1), (0, -1, 0), (0, 1, 0), reach=0.1)
     parts = []
     # screen: gloss bezel + emissive display face using a crop of the main UI texture
     sy = 0.0
@@ -81,7 +83,7 @@ def rear_console(ob, lod):
         parts.append((br.glyphs_mesh("USBC_Rim", [rim], 1.0, 2.0 * MM, 0.3 * MM, lod), "Chrome", 1.0 * MM))
         slot = [(px + x, py - 0.063) for px, py in rounded_rect(9 * MM, 3.4 * MM, 1.7 * MM, 3)]
         parts.append((br.glyphs_mesh("USBC_Slot", [[slot]], 1.0, 0.8 * MM, 0.0, lod), "Trim_Black_Gloss", 1.0 * MM))
-    br.attach(ob, parts, frame, bvh)
+    br.attach(ob, parts, frame, bvh, reach=0.05)   # short rays: the rear cushion is 23 cm behind
 
 
 def main():

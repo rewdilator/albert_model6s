@@ -133,12 +133,12 @@ def planar_uv(me, frame):
         uv.data[loop.index].uv = (co.dot(frame.r) * 10 + 0.5, co.dot(frame.u) * 10 + 0.5)
 
 
-def attach(dest, parts, frame, bvh):
+def attach(dest, parts, frame, bvh, reach=0.25):
     """parts: list of (mesh, material_name, sink). Projects (unless sink is None), joins into ``dest``."""
     objs = []
     for me, mat_name, sink in parts:
         if sink is not None:
-            project_onto(me, frame, bvh, sink)
+            project_onto(me, frame, bvh, sink, reach)
         mark_sharp(me)
         if not me.get("keep_uv"):
             planar_uv(me, frame)

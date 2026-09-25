@@ -259,7 +259,7 @@ All badges are real geometry built from the vector outlines in `tools/albert_bra
 | Wheel-cap emblems | `Wheel_FL/FR/RL/RR` | `A+` 25 mm tall | Chrome, upright when the wheel is at rest | `Chrome` |
 | Door-sill plates | `Interior` | 380 × 34 mm, `ALBERT` 15 mm cap height | Brushed-aluminium plate with black inlay on both front sills, readable from outside; LOD0/1 only | `Aluminium_Brushed`, `Plastic_Black_Matte` |
 | Headrest embroidery | `Interior` | `A+` 40 mm tall | Dark raised stitching on both front headrests; LOD0/1 only | `Leather_Black` |
-| Phone pads | `Interior` | 2 × 86 × 165 mm | Rubberised wireless-charging pads on the console tray, small chrome `A+` each; LOD0/1 | `Plastic_Black_Matte`, `Chrome` |
+| Phone pads | `Interior` | 2 × 86 × 125 mm | Rubberised wireless-charging pads on the console tray, small chrome `A+` each; LOD0/1 | `Plastic_Black_Matte`, `Chrome` |
 | Rear console | `Interior` | 148 × 88 mm display | Rear-passenger touchscreen in a gloss bezel (shows the vehicle card of the main UI), two louvred air vents, two USB-C ports; LOD0/1 | `Screen`, `Trim_Black_Gloss`, `Metal_Dark`, `Chrome` |
 | Touchscreen | `Interior` (`Screen`) | - | Full Albert UI in `ev_sedan_screen_d.png`: gear / speed, battery / range, car render, frunk / trunk / lock buttons, media, turn-by-turn navigation map, climate and app dock | `Screen` |
 

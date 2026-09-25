@@ -35,6 +35,10 @@ SHOTS = {
     "door_card":     ((0.35, 0.15, 1.05), (-0.9, 0.45, 0.72), 24, {"cabin": True}),
     "door_sill":     ((-1.45, 0.25, 1.12), (-0.79, 0.52, 0.36), 32, {"door_fl": -65}),
     "openings":      ((-4.0, 4.6, 2.6), (0.0, 0.3, 0.6), 35, {"open_all": True}),
+    "console":       ((0.28, 0.05, 1.02), (0.0, 0.40, 0.53), 32, {"cabin": True}),
+    "rear_console":  ((0.12, -0.78, 0.86), (0.0, -0.135, 0.47), 30, {"cabin": True}),
+    "charge_port":   ((-1.45, -2.4, 0.98), (-0.84, -1.85, 0.72), 55, {"port": -100}),
+    "charge_port_closed": ((-1.6, -2.15, 0.9), (-0.86, -1.85, 0.73), 50, {}),
     "badge_front":   ((0.25, 3.2, 0.75), (0.0, 2.34, 0.52), 50, {}),
     "badge_rear":    ((0.3, -3.3, 1.05), (0.0, -2.26, 0.9), 50, {}),
 }
@@ -105,6 +109,8 @@ def main(names):
         obj["Door_RR_Pivot"].rotation_euler.z = math.radians(65 if every else 0)
         obj["Hood_Pivot"].rotation_euler.x = math.radians(45 if every else 0)
         obj["Trunk_Pivot"].rotation_euler.x = math.radians(-60 if every else 0)
+        if "ChargePort_Pivot" in obj:
+            obj["ChargePort_Pivot"].rotation_euler.z = math.radians(-100 if every else opt.get("port", 0))
         cabin = opt.get("cabin", False)
         light.data.energy = opt.get("fill", 25) if cabin else 0.0
         light.location = (-0.1, 0.1, 1.15) if name != "steering_wheel" else SW + SW_N * 0.6 + Vector((0.2, 0, 0.25))

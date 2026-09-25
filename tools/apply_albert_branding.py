@@ -124,7 +124,10 @@ def mark_sharp(me, angle_deg=35.0):
 
 
 def planar_uv(me, frame):
-    uv = me.uv_layers.new(name="UVMap")
+    """Planar UVs (10 units per metre) in the single "UVMap" layer the car meshes use."""
+    for layer in [u for u in me.uv_layers if u.name != "UVMap"]:
+        me.uv_layers.remove(layer)
+    uv = me.uv_layers.get("UVMap") or me.uv_layers.new(name="UVMap")
     for loop in me.loops:
         co = me.vertices[loop.vertex_index].co - frame.o
         uv.data[loop.index].uv = (co.dot(frame.r) * 10 + 0.5, co.dot(frame.u) * 10 + 0.5)
@@ -137,7 +140,8 @@ def attach(dest, parts, frame, bvh):
         if sink is not None:
             project_onto(me, frame, bvh, sink)
         mark_sharp(me)
-        planar_uv(me, frame)
+        if not me.get("keep_uv"):
+            planar_uv(me, frame)
         me.materials.append(bpy.data.materials[mat_name])
         if dest.data.has_custom_normals:
             me.update()

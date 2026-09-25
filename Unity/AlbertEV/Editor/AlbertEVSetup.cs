@@ -8,7 +8,7 @@ namespace AlbertEV.EditorTools
 {
     /// <summary>
     /// Tools > Albert EV menu:
-    ///   Create URP Materials   - builds the 34 URP/Lit materials from the spec and remaps them onto both FBX files
+    ///   Create URP Materials   - builds the 35 URP/Lit materials from the spec and remaps them onto both FBX files
     ///   Add Colliders          - convex body collider + a box per door / hood / trunk / bumper on the selected car
     ///   Add Openings Component - adds AlbertCarOpenings (doors, hood, trunk) to the selected car
     /// </summary>
@@ -63,6 +63,7 @@ namespace AlbertEV.EditorTools
             Glass("Lens_Red", 0.6f, 0.015f, 0.015f, 0.05f, 0.55f),
             Lamp("Light_Head", 1f), Lamp("Light_Fog", 0f), Lamp("Light_Tail", 1f),
             Lamp("Light_Indicator", 0f), Lamp("Light_Reverse", 0f), Lamp("Light_Interior", 0f),
+            new Spec { name = "Light_Charge", color = new Color(0.05f, 0.85f, 0.25f), roughness = 0.3f, emission = 3f },
             new Spec { name = "Reflector_Red", color = new Color(0.5f, 0.01f, 0.01f), metallic = 0.4f, roughness = 0.2f, emission = 0.25f },
             T("Tyre_Tread", "tyre", 0f, 0.8f),
             T("Tyre_Sidewall", "tyre_side", 0f, 0.75f),

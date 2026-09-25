@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace AlbertEV
 {
-    public enum CarOpening { DoorFrontLeft, DoorFrontRight, DoorRearLeft, DoorRearRight, Hood, Trunk }
+    public enum CarOpening { DoorFrontLeft, DoorFrontRight, DoorRearLeft, DoorRearRight, Hood, Trunk, ChargePort }
 
     /// <summary>
-    /// Opens and closes each door, the hood (frunk) and the trunk of the Albert EV independently.
+    /// Opens and closes each door, the hood (frunk), the trunk and the charge-port door of the Albert EV independently.
     /// Add it to the car root (the imported "EV_Sedan" object or any parent of it). The hinge
     /// pivots are found by name, and the hinge axes are derived from the model itself, so it works
     /// whatever the import axis settings or the car's orientation.
@@ -43,6 +43,7 @@ namespace AlbertEV
             new Hinge { opening = CarOpening.DoorRearRight,  pivotName = "Door_RR_Pivot", openAngle = -65f },
             new Hinge { opening = CarOpening.Hood,           pivotName = "Hood_Pivot",    openAngle = -45f, duration = 1.2f },
             new Hinge { opening = CarOpening.Trunk,          pivotName = "Trunk_Pivot",   openAngle = 60f,  duration = 1.2f },
+            new Hinge { opening = CarOpening.ChargePort,     pivotName = "ChargePort_Pivot", openAngle = 100f, duration = 0.6f },
         };
 
         public event Action<CarOpening, bool> OpeningChanged;
@@ -71,8 +72,8 @@ namespace AlbertEV
             {
                 if (h.pivot == null) h.pivot = Find(h.pivotName);
                 if (h.pivot == null) continue;
-                bool isDoor = h.opening <= CarOpening.DoorRearRight;
-                Vector3 worldAxis = isDoor ? up : right;
+                bool verticalHinge = h.opening != CarOpening.Hood && h.opening != CarOpening.Trunk;
+                Vector3 worldAxis = verticalHinge ? up : right;
                 h.closedLocal = h.pivot.localRotation;
                 h.localAxis = Quaternion.Inverse(h.pivot.rotation) * worldAxis;
                 h.target = h.startOpen;
@@ -145,6 +146,7 @@ namespace AlbertEV
         [ContextMenu("Toggle Rear Right Door")] void CtxRR() { Toggle(CarOpening.DoorRearRight); }
         [ContextMenu("Toggle Hood (Frunk)")] void CtxHood() { Toggle(CarOpening.Hood); }
         [ContextMenu("Toggle Trunk")] void CtxTrunk() { Toggle(CarOpening.Trunk); }
+        [ContextMenu("Toggle Charge Port")] void CtxPort() { Toggle(CarOpening.ChargePort); }
         [ContextMenu("Close All")] void CtxClose() { CloseAll(); }
     }
 }

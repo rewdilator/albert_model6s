@@ -1,6 +1,6 @@
 """Extra interior details (Blender 4.5), joined into Interior_LOD0/1:
 
-  * twin wireless phone-charging pads on the console tray, each with a small chrome A+
+  * twin wireless phone-charging pads on the console tray, each with a small brushed-aluminium A+
   * rear-passenger console: 8" rear touchscreen in a gloss-black bezel (shows the vehicle
     card of ev_sedan_screen_d.png), two air vents with louvres and two USB-C ports
 
@@ -42,7 +42,7 @@ def phone_pads(ob, lod):
         parts.append((pad, "Plastic_Black_Matte", 0.5 * MM))
         logo = br.glyphs_mesh("PhonePad_Aplus", glyphs, 14 * MM, 3.0 * MM, 0.3 * MM, lod,
                               offset=(x / (14 * MM), 0.042 / (14 * MM) - 0.5))
-        parts.append((logo, "Chrome", 0.5 * MM))
+        parts.append((logo, "Aluminium_Brushed", 0.5 * MM))   # chrome mirrors the dark roof here
     br.attach(ob, parts, frame, bvh)
 
 

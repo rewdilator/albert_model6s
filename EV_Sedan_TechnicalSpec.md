@@ -8,8 +8,8 @@ Generated 2026-09-22 by `build_game_asset.py` (Blender 4.5 headless); Albert bra
 | Units | Metres, real-world scale (source was scaled by 0.892 to true mid-size-sedan dimensions) |
 | Origin | Root `EV_Sedan` at ground level, centred between the wheels (x=0, y=0 on the ground plane) |
 | Axes | Blender: +Y nose, +Z up, +X right (passenger side, LHD). FBX exported `-Z forward / Y up`, so in **Unity: nose = +Z, up = +Y, right = +X** |
-| Triangles | LOD0 477,525 / LOD1 169,387 / LOD2 56,419 (source 684,315) |
-| Draw calls (LOD0) | 132 sub-meshes across 23 renderers, 35 materials (branding reuses existing materials; `Light_Charge` is the only addition) |
+| Triangles | LOD0 475,341 / LOD1 169,211 / LOD2 56,559 (source 684,315) |
+| Draw calls (LOD0) | 134 sub-meshes across 23 renderers, 36 materials (additions: `Chrome_Dark` for the 3D logo, `Light_Charge` for the charge-port LED) |
 | Textures | 44 PNG files (1K max); Unity packed maps in `textures/unity_packed/` |
 | Texture licence | Photo-scanned sets (leather, carpet, felt, plastic, rubber, brushed metal) are **CC0** from ambientCG.com - no attribution required |
 
@@ -35,24 +35,24 @@ Generated 2026-09-22 by `build_game_asset.py` (Blender 4.5 headless); Albert bra
 | `Door_RL` | 19,480 | 6,818 | 2,337 | 9 | `Door_RL_Pivot` | (-0.922, 0.615, -0.116) |
 | `Door_RR` | 19,452 | 6,808 | 2,334 | 9 | `Door_RR_Pivot` | (0.922, 0.615, -0.116) |
 | `Hood` | 4,022 | 1,406 | 482 | 1 | `Hood_Pivot` | (0.0, 0.882, 1.183) |
-| `Trunk` | 28,706 | 10,881 | 4,159 | 11 | `Trunk_Pivot` | (0.0, 1.203, -1.509) |
-| `Bumper_F` | 25,838 | 9,147 | 3,189 | 8 | `Bumper_F_Pivot` | (0.779, 0.785, 1.723) |
+| `Trunk` | 27,978 | 10,521 | 3,983 | 11 | `Trunk_Pivot` | (0.0, 1.203, -1.509) |
+| `Bumper_F` | 25,918 | 9,227 | 3,269 | 9 | `Bumper_F_Pivot` | (0.779, 0.785, 1.723) |
 | `Bumper_R` | 19,687 | 6,890 | 2,361 | 4 | `Bumper_R_Pivot` | (0.779, 0.921, -1.72) |
 | `ChargePort` | 444 | 220 | 108 | 2 | `ChargePort_Pivot` | (-0.882, 0.733, -1.79) |
 | `Glass` | 6,460 | 2,260 | 774 | 2 | `Chassis` | (0.0, -0.0, 0.0) |
-| `Interior` | 135,629 | 48,794 | 14,908 | 14 | `Chassis` | (0.0, -0.0, 0.0) |
+| `Interior` | 136,365 | 49,146 | 14,908 | 14 | `Chassis` | (0.0, -0.0, 0.0) |
 | `Body` | 78,419 | 27,756 | 9,475 | 14 | `Chassis` | (0.0, -0.0, 0.0) |
-| `SteeringWheel` | 11,787 | 3,550 | 814 | 4 | `Steering_Pivot` | (-0.419, 0.827, 0.542) |
+| `SteeringWheel` | 8,779 | 2,950 | 890 | 5 | `Steering_Pivot` | (-0.419, 0.827, 0.542) |
 | `Wiper_R` | 3,138 | 1,097 | 375 | 1 | `Wiper_R_Pivot` | (-0.074, 0.829, 1.431) |
 | `Wiper_L` | 3,045 | 1,065 | 364 | 1 | `Wiper_L_Pivot` | (-0.629, 0.859, 1.266) |
 | `Brake_FL` | 2,504 | 876 | 299 | 1 | `EV_Sedan` | (0.0, 0.0, 0.0) |
 | `Brake_FR` | 2,504 | 876 | 299 | 1 | `EV_Sedan` | (0.0, 0.0, 0.0) |
 | `Brake_RL` | 2,793 | 976 | 335 | 1 | `EV_Sedan` | (0.0, 0.0, 0.0) |
 | `Brake_RR` | 2,793 | 976 | 335 | 1 | `EV_Sedan` | (0.0, 0.0, 0.0) |
-| `Wheel_FL` | 14,763 | 5,219 | 1,815 | 7 | `EV_Sedan` | (-0.829, 0.339, 1.567) |
-| `Wheel_FR` | 14,757 | 5,216 | 1,814 | 7 | `EV_Sedan` | (0.829, 0.339, 1.567) |
-| `Wheel_RL` | 14,758 | 5,216 | 1,814 | 7 | `EV_Sedan` | (-0.829, 0.339, -1.291) |
-| `Wheel_RR` | 14,761 | 5,218 | 1,815 | 7 | `EV_Sedan` | (0.829, 0.339, -1.291) |
+| `Wheel_FL` | 14,947 | 5,307 | 1,855 | 7 | `EV_Sedan` | (-0.829, 0.339, 1.567) |
+| `Wheel_FR` | 14,941 | 5,304 | 1,854 | 7 | `EV_Sedan` | (0.829, 0.339, 1.567) |
+| `Wheel_RL` | 14,942 | 5,304 | 1,854 | 7 | `EV_Sedan` | (-0.829, 0.339, -1.291) |
+| `Wheel_RR` | 14,945 | 5,306 | 1,855 | 7 | `EV_Sedan` | (0.829, 0.339, -1.291) |
 
 ## 4. Pivots and locators (empties)
 Pivot empties are pure translations (no rotation/scale). Child meshes have their origin **on** the pivot, so rotating the mesh in local space swings the part on its hinge.
@@ -154,7 +154,8 @@ Everything in this section is applied automatically by `Unity/AlbertEV/Editor/Al
 | `Plastic_Black_Satin` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.45 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_plastic_black_d.png`, Normal: `ev_sedan_plastic_black_n.png`, Roughness: `ev_sedan_plastic_black_r.png` | Satin exterior plastics, lamp housings |
 | `Plastic_Black_Matte` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.7 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_plastic_black_d.png`, Normal: `ev_sedan_plastic_black_n.png`, Roughness: `ev_sedan_plastic_black_r.png` | Grained interior plastics, dash, door cards, underbody, `ALBERT` sill-plate inlay |
 | `Fabric_Dark` | Opaque | (0.8, 0.8, 0.8) | 0.0 | 0.95 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_fabric_dark_d.png`, Normal: `ev_sedan_fabric_dark_n.png`, Roughness: `ev_sedan_fabric_dark_r.png` | Headliner / trunk felt |
-| `Chrome` | Opaque | (0.92, 0.92, 0.93) | 1.0 | 0.06 | 0.0 | 1.0 | 0.0 | - | Window belt-line trim, badge rims, steering-wheel / wheel-cap `A+` emblems, steering-wheel thumbwheels |
+| `Chrome` | Opaque | (0.92, 0.92, 0.93) | 1.0 | 0.06 | 0.0 | 1.0 | 0.0 | - | Window belt-line trim, badge rims and ledges, wheel-cap `A+`, steering-wheel thumbwheels |
+| `Chrome_Dark` | Opaque | (0.16, 0.16, 0.17) | 1.0 | 0.1 | 0.0 | 1.0 | 0.0 | - | Faceted strokes of the 3D `A+` logo (nose, steering wheel) |
 | `Aluminium_Brushed` | Opaque | (0.8, 0.8, 0.8) | 1.0 | 0.38 | 0.0 | 1.0 | 0.0 | BaseColor: `ev_sedan_aluminium_d.png`, Normal: `ev_sedan_aluminium_n.png`, Roughness: `ev_sedan_aluminium_r.png` | Brushed dash / door trim strips, door-sill plates |
 | `Metal_Dark` | Opaque | (0.22, 0.22, 0.23) | 0.85 | 0.6 | 0.0 | 1.0 | 0.0 | - | Suspension, dust shields |
 | `Light_Housing` | Opaque | (0.85, 0.85, 0.87) | 1.0 | 0.22 | 0.0 | 1.0 | 0.0 | - | Reflector bowls inside lamps |
@@ -252,10 +253,10 @@ All badges are real geometry built from the vector outlines in `tools/albert_bra
 
 | Badge | Part (`_LOD0/1/2`) | Size | Build | Material |
 |---|---|---|---|---|
-| Steering-wheel emblem | `SteeringWheel` | 74 × 48 mm plaque, `A+` 27 mm tall | Gloss-black plaque, 1.6 mm chrome surround, raised bevelled chrome `A+` | `Trim_Black_Gloss`, `Chrome` |
+| Steering-wheel logo | `SteeringWheel` | 3D `A+` 42 mm tall | Faceted 3D logo (see below) straight on the airbag cover | `Chrome_Dark`, `Chrome`, `Trim_Black_Gloss` |
 | Steering-wheel thumbwheels | `SteeringWheel` | Ø 15 mm × 10 mm in 21 × 31 mm pods, 85 mm either side of centre | Knurled chrome rollers (36 ridges) in gloss-black pods; LOD0/1 only | `Chrome`, `Trim_Black_Gloss` |
-| Nose emblem | `Bumper_F` | `A+` 68 mm tall | Gloss-black bevelled letters (5 mm deep) on a 1.4 mm chrome rim - high contrast on white paint | `Trim_Black_Gloss`, `Chrome` |
-| Trunk emblem + wordmark | `Trunk` | `A+` 50 mm, `ALBERT` 34 mm cap height, 25 cm wide | Gloss-black letters on a chrome rim, centred between the tail lamps | `Trim_Black_Gloss`, `Chrome` |
+| Nose logo | `Bumper_F` | 3D `A+` 72 mm tall, 89 mm wide | Faceted 3D logo on the front fascia centre line, where the source car carried its maker's badge | `Chrome_Dark`, `Chrome`, `Trim_Black_Gloss` |
+| Trunk wordmark | `Trunk` | `ALBERT` 36 mm cap height, 27 cm wide | Wordmark only (no logo): gloss-black letters on a chrome rim, centred between the tail lamps | `Trim_Black_Gloss`, `Chrome` |
 | Wheel-cap emblems | `Wheel_FL/FR/RL/RR` | `A+` 25 mm tall | Chrome, upright when the wheel is at rest | `Chrome` |
 | Door-sill plates | `Interior` | 380 × 34 mm, `ALBERT` 15 mm cap height | Brushed-aluminium plate with black inlay on both front sills, readable from outside; LOD0/1 only | `Aluminium_Brushed`, `Plastic_Black_Matte` |
 | Headrest embroidery | `Interior` | `A+` 40 mm tall | Dark raised stitching on both front headrests; LOD0/1 only | `Leather_Black` |
@@ -265,7 +266,8 @@ All badges are real geometry built from the vector outlines in `tools/albert_bra
 
 - Door handles (all four doors) and the fender side-repeater housings are gloss black (`Trim_Black_Gloss`) like the production car, instead of chrome (`tools/apply_black_trim.py`).
 - The touchscreen UVs were flipped vertically: the source mapped the UI upside down. It now shows the right way up in Blender and Unity.
-- Logo files for menus, loading screens and decals are in `brand/` (SVG + transparent PNG, white and black), plus `albert_car_render.png`, a transparent render of the car for garage / selection screens.
+- **3D logo** (from the reference artwork): a bold A with a flat apex and a "+" overlapping its right leg. Every stroke is a convex bar with a hip roof whose planar facets meet at a central ridge; where strokes overlap their roofs cross in crisp creases, giving the diamond-cut look. Layers: gloss-black border (outline + 3.5 % of cap height), thin chrome ledge, dark-chrome faceted strokes; the "+" stands proud of the A on its own wider black frame. Flat uses (wheel caps, headrests, phone pads, touchscreen, `brand/` files) use the silhouette with a clearance gap cut round the "+".
+- Logo files for menus, loading screens and decals are in `brand/` (SVG + transparent PNG, white and black), plus `albert_logo_3d.png` (transparent studio render of the 3D badge) and `albert_car_render.png`, a transparent render of the car for garage / selection screens.
 - Branding is applied by `tools/apply_albert_branding.py` on the unbranded `.blend`; the FBX files are exported by `tools/export_fbx.py` with the same settings as the original build (FBX 7.4, `-Z` forward / `Y` up, edge smoothing, tangents, relative texture paths).
 
 ## 11. Charge port
@@ -277,7 +279,7 @@ Rear-left quarter panel, between the wheel arch and the tail lamp (`tools/add_ch
 
 ## 12. Unity quick start (Unity 6 / URP)
 1. Copy `EV_Sedan_LODs.fbx` (or `EV_Sedan.fbx`), the `textures/` folder and `Unity/AlbertEV/` into one folder under `Assets/`, e.g. `Assets/AlbertEV/`. The import settings from section 6 are applied automatically by `AlbertEVImport.cs`.
-2. **Tools > Albert EV > Create URP Materials** builds the 35 URP/Lit materials from section 7 (textures, packed metallic/smoothness, transparency, alpha-clipped lamps with emission ready to animate) in a `Materials/` folder and remaps them onto both FBX files.
+2. **Tools > Albert EV > Create URP Materials** builds the 36 URP/Lit materials from section 7 (textures, packed metallic/smoothness, transparency, alpha-clipped lamps with emission ready to animate) in a `Materials/` folder and remaps them onto both FBX files.
 3. Drag the model into the scene, select it and run **Tools > Albert EV > Add Colliders To Selected Car** and **Add Openings Component To Selected Car**. Add your Rigidbody / RCC controller to the root as in section 5.
 4. Open things from code or from the component's ⋮ menu in the Inspector:
    ```csharp
@@ -287,5 +289,5 @@ Rear-left quarter panel, between the wheel arch and the tail lamp (`tools/add_ch
    ```
    The component rotates the `*_Pivot` objects, so all LODs, door glass, handles and badges move together. Hinge axes are derived from the model, so it works with any import orientation.
 
-Performance notes: LOD0 is a hero-quality 478k triangles; with the LOD transitions above a car at normal gameplay distance renders LOD1 (169k) or LOD2 (56k). All materials use the same URP/Lit shader and have GPU instancing on, so the SRP Batcher keeps the ~130 sub-meshes cheap. Textures are 1K with streaming mip maps.
+Performance notes: LOD0 is a hero-quality 475k triangles; with the LOD transitions above a car at normal gameplay distance renders LOD1 (169k) or LOD2 (56k). All materials use the same URP/Lit shader and have GPU instancing on, so the SRP Batcher keeps the ~135 sub-meshes cheap. Textures are 1K with streaming mip maps.
 

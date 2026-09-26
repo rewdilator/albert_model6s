@@ -177,13 +177,78 @@ def surface_normal(bvh, origin, direction, reach=0.5):
 
 # ---------------------------------------------------------------- badges
 
-def emblem_parts(name, lod, cap, depth, bevel):
-    glyphs, _ = ab.emblem()
-    return glyphs_mesh(f"{name}_AplusGlyphs", glyphs, cap, depth, bevel, lod, offset=(0.0, -0.5))
+def ensure_dark_chrome():
+    m = bpy.data.materials.get("Chrome_Dark")
+    if m is None:
+        m = bpy.data.materials.new("Chrome_Dark")
+        m.use_nodes = True
+        b = m.node_tree.nodes["Principled BSDF"]
+        b.inputs["Base Color"].default_value = (0.16, 0.16, 0.17, 1)
+        b.inputs["Metallic"].default_value = 1.0
+        b.inputs["Roughness"].default_value = 0.1
+    return m
+
+
+def hip_stroke(poly, wall, slope, z0=0.0):
+    """Convex stroke: vertical walls up to z0 + wall, then a hip roof rising at ``slope`` from
+    every edge to a central ridge (the faceted, diamond-cut look). Built by cutting a box
+    with one vertical and one roof plane per edge, so every facet is exactly planar."""
+    xs, ys = [p[0] for p in poly], [p[1] for p in poly]
+    top = z0 + wall + slope * max(max(xs) - min(xs), max(ys) - min(ys))
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    for v in bm.verts:
+        v.co.x = min(xs) - 0.01 + (v.co.x + 0.5) * (max(xs) - min(xs) + 0.02)
+        v.co.y = min(ys) - 0.01 + (v.co.y + 0.5) * (max(ys) - min(ys) + 0.02)
+        v.co.z = (v.co.z + 0.5) * top
+    n = len(poly)
+    for i in range(n):
+        ax, ay = poly[i]
+        bx, by = poly[(i + 1) % n]
+        el = math.hypot(bx - ax, by - ay)
+        nin = Vector((-(by - ay) / el, (bx - ax) / el, 0.0))          # inward normal (CCW polygon)
+        for co, no in (((ax, ay, 0.0), -nin),                                        # wall
+                       ((ax, ay, z0 + wall), Vector((-slope * nin.x, -slope * nin.y, 1.0)))):  # roof
+            geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
+            res = bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-7, plane_co=co, plane_no=no.normalized(),
+                                         clear_outer=True)
+            cut = [e for e in res["geom_cut"] if isinstance(e, bmesh.types.BMEdge)]
+            if cut:
+                bmesh.ops.contextual_create(bm, geom=cut)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+    me = bpy.data.meshes.new("Logo_Stroke")
+    bm.to_mesh(me)
+    bm.free()
+    for p in me.polygons:                                     # facets render flat and crisp
+        p.use_smooth = False
+    return me
+
+
+def faceted_logo(name, cap, lod, zscale=0.55, sink=0.8 * MM):
+    """3D A+ after the reference artwork: black border, thin chrome ledge, dark-chrome
+    diamond-cut strokes; the "+" stands proud of the A on its own black frame.
+    Returns attach() parts; x centred, y centred on the cap height."""
+    ensure_dark_chrome()
+    z = lambda h: h * cap * zscale  # noqa: E731
+    strokes = ab.logo_strokes_centred()
+    parts = []
+    for part, base in (("A", 0.0), ("plus", 0.13)):
+        g_border, g_ledge = (0.035, 0.013) if part == "A" else (0.045, 0.016)
+        border = glyphs_mesh(f"{name}_{part}_Border", ab.logo_outline(part, g_border), cap,
+                             z(base + 0.05), 0.15 * MM, lod, offset=(0.0, -0.5))
+        ledge = glyphs_mesh(f"{name}_{part}_Ledge", ab.logo_outline(part, g_ledge), cap,
+                            z(base + 0.06), 0.1 * MM, lod, offset=(0.0, -0.5))
+        parts += [(border, "Trim_Black_Gloss", sink), (ledge, "Chrome", sink)]
+        for q in strokes[part]:
+            poly = [(x * cap, (y - 0.5) * cap) for x, y in q]
+            me = hip_stroke(poly, wall=z(base + 0.065), slope=0.8 * zscale)
+            parts.append((me, "Chrome_Dark", sink))
+    return parts
 
 
 def steering_wheel_emblem(ob, lod):
-    """Gloss-black plaque with a chrome surround and chrome A+ on the airbag cover."""
+    """Faceted A+ logo and thumb-wheel pods on the airbag cover."""
     me = ob.data
     pts = [v.co for v in me.vertices]
     c = sum(pts, Vector()) / len(pts)
@@ -203,17 +268,11 @@ def steering_wheel_emblem(ob, lod):
     hub_pt, _ = surface_normal(bvh, centre + n * 0.3, -n)
     frame = Frame(hub_pt, r_axis, Vector((0, 0, 1)), n)
 
-    a, b = 37 * MM, 24 * MM
-    steps = lod_steps(72, lod)
-    plaque = glyphs_mesh("SW_Plaque", [[superellipse(a, b, steps=steps)]], 1.0, 3.0 * MM, 1.0 * MM, lod)
-    letters = emblem_parts("SW", lod, cap=27 * MM, depth=4.4 * MM, bevel=0.5 * MM)
-    parts = [(plaque, "Trim_Black_Gloss", 1.2 * MM), (letters, "Chrome", 1.2 * MM)]
-    if lod == 2:                      # far LOD: plaque + letters only
+    # faceted A+ straight on the airbag cover, where the source car carried its maker's badge
+    parts = faceted_logo("SW_Logo", cap=42 * MM, lod=lod, zscale=0.5, sink=0.8 * MM)
+    if lod == 2:                      # far LOD: logo only
         attach(ob, parts, frame, bvh)
         return
-    outer = superellipse(a + 1.6 * MM, b + 1.6 * MM, steps=steps)
-    inner = superellipse(a - 0.4 * MM, b - 0.4 * MM, steps=steps)[::-1]
-    parts.append((glyphs_mesh("SW_Surround", [[outer, inner]], 1.0, 3.8 * MM, 0.6 * MM, lod), "Chrome", 1.2 * MM))
     # thumb-wheel pods either side of the emblem (media / cruise controls)
     for x in (-0.085, 0.085):
         pod_c = frame.point(x, -0.02)
@@ -282,19 +341,16 @@ def black_chrome(name, glyphs, cap, lod, y, depth, rim):
              "Trim_Black_Gloss", 0.8 * MM)]
 
 
-def ext_emblem(cap, y=0.0, depth=5.0 * MM, rim=1.4 * MM):
+def ext_emblem(cap):
     def fn(lod):
-        glyphs, _ = ab.emblem()
-        return black_chrome("Front_Aplus", glyphs, cap, lod, y, depth, rim)
+        return faceted_logo("Front_Logo", cap, lod, zscale=0.5)
     return fn
 
 
-def rear_badges(cap_emblem, cap_word, y_emblem, y_word, tracking):
+def rear_wordmark(cap_word, tracking):
     def fn(lod):
-        glyphs, _ = ab.emblem()
         word, _ = ab.wordmark(tracking=tracking)
-        return (black_chrome("Rear_Aplus", glyphs, cap_emblem, lod, y_emblem, 5.0 * MM, 1.3 * MM) +
-                black_chrome("Rear_Wordmark", word, cap_word, lod, y_word, 4.0 * MM, 1.0 * MM))
+        return black_chrome("Rear_Wordmark", word, cap_word, lod, 0.0, 4.0 * MM, 1.0 * MM)
     return fn
 
 
@@ -360,11 +416,10 @@ def main():
         steering_wheel_emblem(bpy.data.objects[f"SteeringWheel_LOD{lod}"], lod)
         # front fascia, centred just under the bonnet shut-line
         surface_badge(bpy.data.objects[f"Bumper_F_LOD{lod}"], lod, (0.0, 2.345, 0.50), (0, -1, 0), (-1, 0, 0),
-                      ext_emblem(cap=68 * MM))
-        # trunk: emblem between the tail lamps, wide-spaced wordmark underneath
+                      ext_emblem(cap=72 * MM))
+        # trunk: the ALBERT wordmark alone, centred between the tail lamps
         surface_badge(bpy.data.objects[f"Trunk_LOD{lod}"], lod, (0.0, -2.26, 0.905), (0, 1, 0), (1, 0, 0),
-                      rear_badges(cap_emblem=50 * MM, cap_word=34 * MM, y_emblem=0.052, y_word=-0.032,
-                                  tracking=0.75))
+                      rear_wordmark(cap_word=36 * MM, tracking=0.75))
         fix_screen_uvs(bpy.data.objects[f"Interior_LOD{lod}"])
         if lod < 2:                   # sill plates only matter up close
             sill_plates(bpy.data.objects[f"Interior_LOD{lod}"], lod)

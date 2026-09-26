@@ -131,15 +131,81 @@ def glyph_R(w, steps=16):
 
 # ---------------------------------------------------------------- compositions
 
+# ---------------------------------------------------------------- the A+ logo
+# Proportions measured from the reference artwork (cap height = 1, baseline y = 0):
+# a bold A with a flat apex and a triangular counter, and a "+" overlapping its right
+# leg at crossbar height. Each part is a union of convex strokes so the 3D badge can give
+# every stroke a faceted (hip-roof) top whose creases meet like a diamond cut.
+LOGO_A = dict(foot_out=0.62, foot_in=0.33, apex=0.132, counter_top=0.755, bar=(0.25, 0.46))
+LOGO_PLUS = dict(cx=0.258, cy=0.457, arm=0.26, half=0.09)
+PLUS_GAP = 0.045          # clearance cut round the "+" in flat (single-colour) versions
+
+
+def logo_strokes():
+    """Convex stroke polygons (CCW) of the logo, un-centred: {"A": [...], "plus": [...]}."""
+    a = LOGO_A
+    fo, fi, ap, ct = a["foot_out"], a["foot_in"], a["apex"], a["counter_top"]
+    k_in = fi / ct                                  # inner-edge x change per unit y
+    x_top = -fi + k_in                              # left inner edge extended to y = 1
+    left = [(-fo, 0.0), (-fi, 0.0), (x_top, 1.0), (-ap, 1.0)]
+    right = [(-x, y) for x, y in left][::-1]
+    # crossbar runs between the leg centre lines, so its hidden ends sit under the leg ridges
+    centre = lambda y: ((-fo + (fo - ap) * y) + (-fi + k_in * y)) / 2  # noqa: E731
+    b0, b1 = a["bar"]
+    bar = [(centre(b0), b0), (-centre(b0), b0), (-centre(b1), b1), (centre(b1), b1)]
+    p = LOGO_PLUS
+    cx, cy, L, t = p["cx"], p["cy"], p["arm"], p["half"]
+    horiz = [(cx - L, cy - t), (cx + L, cy - t), (cx + L, cy + t), (cx - L, cy + t)]
+    vert = [(cx - t, cy - L), (cx + t, cy - L), (cx + t, cy + L), (cx - t, cy + L)]
+    return {"A": [left, right, bar], "plus": [horiz, vert]}
+
+
+def _logo_centre():
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    st = logo_strokes()
+    x0, _, x1, _ = unary_union([Polygon(q) for q in st["A"] + st["plus"]]).bounds
+    return (x0 + x1) / 2, (x0 - (x0 + x1) / 2, x1 - (x0 + x1) / 2)
+
+
+def logo_strokes_centred():
+    c, _ = _logo_centre()
+    return {k: [[(x - c, y) for x, y in q] for q in v] for k, v in logo_strokes().items()}
+
+
+def _rings(geom):
+    """shapely (Multi)Polygon -> list of glyphs [outline CCW, holes CW]."""
+    polys = getattr(geom, "geoms", [geom])
+    out = []
+    for poly in polys:
+        rings = [list(poly.exterior.coords)[:-1]] + [list(h.coords)[:-1] for h in poly.interiors]
+        out.append(_orient(rings))
+    return out
+
+
+def logo_outline(part, grow=0.0):
+    """Outline of "A" or "plus" (centred), optionally grown with mitred corners, as glyphs."""
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    geom = unary_union([Polygon(q) for q in logo_strokes_centred()[part]])
+    if grow:
+        geom = geom.buffer(grow, join_style="mitre", mitre_limit=4.0)
+    return _rings(geom)
+
+
 def emblem():
-    """The A+ mark. Returns (glyphs, (xmin, xmax)) with x centred on the mark."""
-    a, _ = glyph_A()
-    plus = glyph_plus(0.86, 0.76)
-    glyphs = [a, plus]
-    xmin, xmax = -0.62, 0.86 + 0.24
-    c = (xmin + xmax) / 2
-    glyphs = [_translate(g, -c) for g in glyphs]
-    return glyphs, (xmin - c, xmax - c)
+    """Flat single-colour A+ (the A with a clearance gap cut round the "+").
+
+    Returns (glyphs, (xmin, xmax)) with x centred on the mark, y from 0 to 1.
+    """
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    st = logo_strokes_centred()
+    a = unary_union([Polygon(q) for q in st["A"]])
+    plus = unary_union([Polygon(q) for q in st["plus"]])
+    flat = a.difference(plus.buffer(PLUS_GAP, join_style="mitre")).union(plus)
+    _, bounds = _logo_centre()
+    return _rings(flat), bounds
 
 
 def wordmark(stroke=0.14, tracking=0.42):
